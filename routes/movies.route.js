@@ -1,5 +1,11 @@
 import express from "express";
-import { client } from "../index.js";
+import {
+  getMovies,
+  getMoviebyID,
+  deleteMoviebyID,
+  updateMoviebyID,
+  newFunction,
+} from "../services/movies.service.js";
 const router = express.Router();
 
 router.get("/", async function (request, response) {
@@ -10,11 +16,7 @@ router.get("/", async function (request, response) {
     request.query.rating = +request.query.rating;
   }
   //Cursor-PAgination---to show top 20 results
-  const movies = await client
-    .db("b40wd")
-    .collection("movies")
-    .find(request.query)
-    .toArray();
+  const movies = await getMovies(request);
   //console.log(movies);
   response.send(movies);
 });
@@ -23,10 +25,7 @@ router.get("/:id", async function (request, response) {
   //Db.movies.findOne({id:'100'})
   /*   console.log(request.params, id);
     const movie = movies.find((mv) => mv.id == id); */
-  const movie = await client
-    .db("b40wd")
-    .collection("movies")
-    .findOne({ id: id });
+  const movie = await getMoviebyID(id);
   console.log(movie);
   movie
     ? response.send(movie)
@@ -38,10 +37,7 @@ router.delete("/:id", async function (request, response) {
   //Db.movies.deleteOne({id:'100'})
   /*   console.log(request.params, id);
     const movie = movies.find((mv) => mv.id == id); */
-  const result = await client
-    .db("b40wd")
-    .collection("movies")
-    .deleteOne({ id: id });
+  const result = await deleteMoviebyID(id);
   console.log(result);
   result.deletedCount > 0
     ? response.send({ message: "movie deleted successfully" })
@@ -54,10 +50,7 @@ router.put("/:id", async function (request, response) {
   //Db.movies.updateOne({id:'99'},{$set:{rating:9}})
   /*   console.log(request.params, id);
     const movie = movies.find((mv) => mv.id == id); */
-  const result = await client
-    .db("b40wd")
-    .collection("movies")
-    .updateOne({ id: id }, { $set: data });
+  const result = await updateMoviebyID(id, data);
   console.log(result);
   response.send(result);
 });
@@ -65,7 +58,7 @@ router.put("/:id", async function (request, response) {
 router.post("/", async function (request, response) {
   const data = request.body;
   console.log(data);
-  const result = await client.db("b40wd").collection("movies").insertMany(data);
+  const result = await newFunction(data);
   response.send(result);
 });
 export default router;
